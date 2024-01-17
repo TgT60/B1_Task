@@ -1,0 +1,10 @@
+﻿@{
+    ViewBag.Title = "Document Processing";
+}
+
+<h2>Document Processing</h2>
+
+@using (Html.BeginForm("ProcessDocuments", "Document", FormMethod.Post))
+{
+    <input type="submit" value="Process Documents" />
+}
