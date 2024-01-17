@@ -8,5 +8,6 @@ namespace B1_Task.Entity
         { }
 
         public virtual DbSet<TblDocument> TblDocuments { get; set; }
+        public virtual DbSet<TblContent> TblContents { get; set; }
     }
 }

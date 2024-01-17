@@ -5,11 +5,11 @@ namespace B1_Task.Controllers
 {
 	public class DocumentController : Controller
 	{
-        DocumentFunction _documentFunction;
+        IDocumentFunction _documentFunction;
 
-		public DocumentController()
+		public DocumentController(IDocumentFunction documentFunction)
 		{
-			_documentFunction = new DocumentFunction();
+			_documentFunction = documentFunction ;
 		}
 
 		public ActionResult Index()
@@ -24,9 +24,21 @@ namespace B1_Task.Controllers
 			
 			var totalDeletedLines = _documentFunction.CreateCommonDoc(path, "ff");
 
-			ViewBag.TotalDeletedLines = totalDeletedLines;
+            _documentFunction.StoredDocument(path);
+
+            ViewBag.TotalDeletedLines = totalDeletedLines;
 
             return View("Result");
         }
-	}
+
+        public ActionResult StoreDocument()
+        {
+            var path = @"C:\Users\dimai\Desktop\Files\";
+
+          
+
+
+            return View("Result");
+        }
+    }
 }

@@ -1,66 +1,137 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
+using B1_Task.Entity;
+using EFCore.BulkExtensions;
 
 namespace B1_Task.Function.Document
 {
-	public class DocumentFunction : IDocumentFunction
-	{
-		public int CreateCommonDoc( string path, string stringToRemove)
-		{
-			using (var output = File.Open(Path.Combine(path, "output.txt"), FileMode.Create))
-			{
-				var totalDeletedLines = 0;
+    public class DocumentFunction : IDocumentFunction
+    {
+        private readonly B1Context _b1Context;
 
-				foreach (var fileName in CreateListDocuments())
-				{
-					string filePath = Path.Combine(path, fileName);
-					totalDeletedLines += RemoveString(filePath, output, stringToRemove);
-				}
+        public DocumentFunction(B1Context b1Context)
+        {
+            _b1Context = b1Context;
+        }
+        
 
-				return totalDeletedLines;
-			}
-		}
+        public int CreateCommonDoc(string path, string stringToRemove)
+        {
+            using (var output = File.Open(Path.Combine(path, "output.txt"), FileMode.Create))
+            {
+                var totalDeletedLines = 0;
 
-		public List<string> CreateListDocuments()
-		{
-			var filesNameList = new List<string>();
+                foreach (var fileName in CreateListDocuments())
+                {
+                    string filePath = Path.Combine(path, fileName);
+                    totalDeletedLines += RemoveString(filePath, output, stringToRemove);
+                }
 
-			for (int i = 1; i <= 100; i++)
-			{
-				var fileName = $"test_{i}.txt";
-				filesNameList.Add(fileName);
+                return totalDeletedLines;
+            }
+        }
 
-				GenerateDoc(fileName);
-			}
+        public List<string> CreateListDocuments()
+        {
+            var filesNameList = new List<string>();
 
-			return filesNameList;
-		}
+            for (int i = 1; i <= 100; i++)
+            {
+                var fileName = $"test_{i}.txt";
+                filesNameList.Add(fileName);
 
-		public int RemoveString(string filePath, FileStream output, string stringToRemove)
-		{
-			var countDeletedLinesInFile = 0;
+                GenerateDoc(fileName);
+            }
 
-			using (var input = File.OpenRead(filePath))
-			using (var reader = new StreamReader(input))
-			{
-				string line;
-				while ((line = reader.ReadLine()) != null)
-				{
-					if (!line.Contains(stringToRemove))
-					{
-						byte[] lineBytes = Encoding.UTF8.GetBytes(line + Environment.NewLine);
-						output.Write(lineBytes, 0, lineBytes.Length);
-					}
-					else
-					{
-						countDeletedLinesInFile++;
-					}
-				}
-			}
+            return filesNameList;
+        }
 
-			return countDeletedLinesInFile;
-		}
+        public int RemoveString(string filePath, FileStream output, string stringToRemove)
+        {
+            var countDeletedLinesInFile = 0;
 
-		public void GenerateDoc(string fileName)
+            using (var input = File.OpenRead(filePath))
+            using (var reader = new StreamReader(input))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (!line.Contains(stringToRemove))
+                    {
+                        byte[] lineBytes = Encoding.UTF8.GetBytes(line + Environment.NewLine);
+                        output.Write(lineBytes, 0, lineBytes.Length);
+                    }
+                    else
+                    {
+                        countDeletedLinesInFile++;
+                    }
+                }
+            }
+
+            return countDeletedLinesInFile;
+        }
+
+        public void StoredDocument(string filePath)
+        {
+            using (var output = File.Open(Path.Combine(filePath, "output.txt"), FileMode.Open))
+            using (var reader = new StreamReader(output))
+            {
+                string line;
+
+                var docEntity = new TblDocument()
+                {
+                    Name = "output.txt"
+                };
+                _b1Context.TblDocuments.Add(docEntity);
+                _b1Context.SaveChanges();
+
+                var contentEntities = new List<TblContent>();
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var parsedLine = ParseLine(line);
+
+                    if( parsedLine != null )
+                    {
+                        var tblContent = new TblContent()
+                        {
+                            Date = parsedLine.Date,
+                            StringEU = parsedLine.StringEU,
+                            StringRU = parsedLine.StringRU,
+                            PositiveNumber = parsedLine.PositiveNumber,
+                            FolatNumber = parsedLine.FolatNumber,
+                            TblDocumentId = docEntity.Id,
+                        };
+                        contentEntities.Add(tblContent);
+                    }
+                }
+                _b1Context.TblContents.AddRange(contentEntities);
+                _b1Context.SaveChanges();
+            }
+        }
+
+        private Content ParseLine(string line)
+        {
+            var parts = line.Split("||");
+
+            if (parts.Length == 6)
+            {
+                return new Content
+                {
+                    Date = parts[0],
+                    StringEU = parts[1],
+                    StringRU = parts[2],
+                    PositiveNumber = parts[3],
+                    FolatNumber = parts[4]
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void GenerateDoc(string fileName)
 		{
 			FileInfo textFile = new FileInfo($@"C:\Users\dimai\Desktop\Files\{fileName}");
 			using (StreamWriter sw = textFile.CreateText())
@@ -128,7 +199,7 @@ namespace B1_Task.Function.Document
 
 		public string GenerateStringForDoc()
 		{
-			var doc = new Document()
+			var doc = new Content()
 			{
 				Date = GenerateRandomDate(),
 				StringEU = GenerateRandomStringEU(),
@@ -141,5 +212,7 @@ namespace B1_Task.Function.Document
 
 			return result;
 		}
+
+
 	}
 }

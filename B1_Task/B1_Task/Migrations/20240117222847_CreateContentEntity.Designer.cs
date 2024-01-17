@@ -3,6 +3,7 @@ using B1_Task.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace B1_Task.Migrations
 {
     [DbContext(typeof(B1Context))]
-    partial class B1ContextModelSnapshot : ModelSnapshot
+    [Migration("20240117222847_CreateContentEntity")]
+    partial class CreateContentEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,10 +70,6 @@ namespace B1_Task.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("TblDocuments");
@@ -79,7 +78,7 @@ namespace B1_Task.Migrations
             modelBuilder.Entity("B1_Task.Entity.TblContent", b =>
                 {
                     b.HasOne("B1_Task.Entity.TblDocument", "Document")
-                        .WithMany("Contents")
+                        .WithMany("Content")
                         .HasForeignKey("TblDocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -89,7 +88,7 @@ namespace B1_Task.Migrations
 
             modelBuilder.Entity("B1_Task.Entity.TblDocument", b =>
                 {
-                    b.Navigation("Contents");
+                    b.Navigation("Content");
                 });
 #pragma warning restore 612, 618
         }

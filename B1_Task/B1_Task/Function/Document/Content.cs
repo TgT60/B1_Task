@@ -1,6 +1,6 @@
 ﻿namespace B1_Task.Function.Document
 {
-	public class Document
+	public class Content
 	{
 		public string Date { get; set; }
 		public string StringEU { get; set; }
