@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using B1_Task.Entity;
 using EFCore.BulkExtensions;
@@ -13,7 +14,6 @@ namespace B1_Task.Function.Document
         {
             _b1Context = b1Context;
         }
-        
 
         public int CreateCommonDoc(string path, string stringToRemove)
         {
@@ -73,42 +73,39 @@ namespace B1_Task.Function.Document
 
         public void StoredDocument(string filePath)
         {
-            using (var output = File.Open(Path.Combine(filePath, "output.txt"), FileMode.Open))
-            using (var reader = new StreamReader(output))
+            var lines = File.ReadAllLines(Path.Combine(filePath, "output.txt"));
+
+            var docEntity = new TblDocument()
             {
-                string line;
+                Name = "output.txt"
+            };
 
-                var docEntity = new TblDocument()
+            _b1Context.TblDocuments.Add(docEntity);
+            _b1Context.SaveChanges();
+
+            foreach (var line in lines)
+            {
+                var parsedLine = ParseLine(line);
+
+                if (parsedLine != null)
                 {
-                    Name = "output.txt"
-                };
-                _b1Context.TblDocuments.Add(docEntity);
-                _b1Context.SaveChanges();
-
-                var contentEntities = new List<TblContent>();
-
-                while ((line = reader.ReadLine()) != null)
-                {
-                    var parsedLine = ParseLine(line);
-
-                    if( parsedLine != null )
+                    var tblContent = new TblContent()
                     {
-                        var tblContent = new TblContent()
-                        {
-                            Date = parsedLine.Date,
-                            StringEU = parsedLine.StringEU,
-                            StringRU = parsedLine.StringRU,
-                            PositiveNumber = parsedLine.PositiveNumber,
-                            FolatNumber = parsedLine.FolatNumber,
-                            TblDocumentId = docEntity.Id,
-                        };
-                        contentEntities.Add(tblContent);
-                    }
+                        Date = parsedLine.Date,
+                        StringEU = parsedLine.StringEU,
+                        StringRU = parsedLine.StringRU,
+                        PositiveNumber = parsedLine.PositiveNumber,
+                        FolatNumber = parsedLine.FolatNumber,
+                        TblDocumentId = docEntity.Id,
+                    };
+
+                    _b1Context.TblContents.Add(tblContent);
                 }
-                _b1Context.TblContents.AddRange(contentEntities);
-                _b1Context.SaveChanges();
             }
+
+            _b1Context.SaveChanges();
         }
+
 
         private Content ParseLine(string line)
         {
