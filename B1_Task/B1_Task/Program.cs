@@ -1,3 +1,4 @@
+using B1_Task.Controllers.ProcessHub;
 using B1_Task.Entity;
 using B1_Task.Function.Document;
 using Microsoft.EntityFrameworkCore;
@@ -7,10 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<IDocumentFunction, DocumentFunction>();
+builder.Services.AddTransient<ProcessHub>();
 builder.Services.AddDbContext<B1Context>(options =>
 {
     options.UseSqlServer(builder.Configuration["ConnectionString"]);
 });
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -30,5 +34,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Document}/{action=Index}/{id?}");
+
+app.MapHub<ProcessHub>("/ProcessHub");
 
 app.Run();

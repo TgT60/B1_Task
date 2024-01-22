@@ -76,6 +76,25 @@ namespace B1_Task.Migrations
                     b.ToTable("TblDocuments");
                 });
 
+            modelBuilder.Entity("B1_Task.Entity.TblProcedureResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("MedianValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("TotalSumPositive")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblProcedureResults");
+                });
+
             modelBuilder.Entity("B1_Task.Entity.TblContent", b =>
                 {
                     b.HasOne("B1_Task.Entity.TblDocument", "Document")

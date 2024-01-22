@@ -23,9 +23,6 @@ namespace B1_Task.Controllers
 			var path = @"C:\Users\dimai\Desktop\Files\";
 			
 			var totalDeletedLines = _documentFunction.CreateCommonDoc(path, "ff");
-
-            _documentFunction.StoredDocument(path);
-
             ViewBag.TotalDeletedLines = totalDeletedLines;
 
             return View("Result");
@@ -34,10 +31,7 @@ namespace B1_Task.Controllers
         public ActionResult StoreDocument()
         {
             var path = @"C:\Users\dimai\Desktop\Files\";
-
-          
-
-
+            _documentFunction.StoredDocument(path);
             return View("Result");
         }
     }

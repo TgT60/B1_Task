@@ -1,18 +1,23 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using B1_Task.Controllers.ProcessHub;
 using B1_Task.Entity;
 using EFCore.BulkExtensions;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace B1_Task.Function.Document
 {
     public class DocumentFunction : IDocumentFunction
     {
         private readonly B1Context _b1Context;
+        private readonly IHubContext<ProcessHub> _processHub;
 
-        public DocumentFunction(B1Context b1Context)
+        public DocumentFunction(B1Context b1Context, IHubContext<ProcessHub> processHub)
         {
             _b1Context = b1Context;
+            _processHub = processHub;
         }
 
         public int CreateCommonDoc(string path, string stringToRemove)
@@ -71,7 +76,7 @@ namespace B1_Task.Function.Document
             return countDeletedLinesInFile;
         }
 
-        public void StoredDocument(string filePath)
+        public void StoreDocument(string filePath)
         {
             var lines = File.ReadAllLines(Path.Combine(filePath, "output.txt"));
 
@@ -79,6 +84,9 @@ namespace B1_Task.Function.Document
             {
                 Name = "output.txt"
             };
+
+            var importedCount = 0;
+            var remainingCount = lines.Length;
 
             _b1Context.TblDocuments.Add(docEntity);
             _b1Context.SaveChanges();
@@ -98,14 +106,16 @@ namespace B1_Task.Function.Document
                         FolatNumber = parsedLine.FolatNumber,
                         TblDocumentId = docEntity.Id,
                     };
-
                     _b1Context.TblContents.Add(tblContent);
+                    _b1Context.SaveChanges();
                 }
+                remainingCount--;
+                importedCount++;
+
+                _processHub.Clients.All.SendAsync("UploadProcess", importedCount, remainingCount);
             }
 
-            _b1Context.SaveChanges();
         }
-
 
         private Content ParseLine(string line)
         {
@@ -161,7 +171,7 @@ namespace B1_Task.Function.Document
 			var rnd = new Random();
 			DateTime randomDate = firstDate.AddDays(rnd.Next(range));
 
-			return randomDate.ToString("dd-MM-yyyy").Replace('-', '.');
+			return randomDate.ToString("dd.MM.yyyy");
 		}
 
 		public string GenerateRandomStringEU()
@@ -188,7 +198,7 @@ namespace B1_Task.Function.Document
 			double maxValue = 20.0;
 			int decimalPlaces = 8;
 
-			var range = rnd.NextDouble() * (maxValue - minValue);
+			var range = rnd.NextDouble() * (maxValue - minValue) + minValue;
 			var result = Math.Round(range, decimalPlaces);
 
 			return result.ToString("0.00000000");

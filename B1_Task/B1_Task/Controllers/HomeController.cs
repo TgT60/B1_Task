@@ -17,7 +17,6 @@ namespace B1_Task.Controllers
 
 		public IActionResult Index()
 		{
-			
 			return View();
 		}
 
@@ -32,7 +31,6 @@ namespace B1_Task.Controllers
 			_documentFunction.CreateCommonDoc(path,"ff");
 			return RedirectToAction("Index");
 		}
-
 
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
