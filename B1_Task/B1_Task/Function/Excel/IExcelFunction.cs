@@ -7,6 +7,7 @@ namespace B1_Task.Function.Excel
         Task<List<List<object>>> UploadExcelFile(IFormFile file);
         Task<List<List<object>>> ReadExcelData(string filePath);
         Task<List<string>> ProcessExcelFile(IFormFile file);
+        Task<Dictionary<string, List<string>>> ProcessExcelFileForHeader(IFormFile file);
 
     }
 }

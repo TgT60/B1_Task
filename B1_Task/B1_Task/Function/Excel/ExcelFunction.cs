@@ -81,5 +81,52 @@ namespace B1_Task.Function.Excel
             }
             return null;
         }
+
+        public async Task<Dictionary<string, List<string>>> ProcessExcelFileForHeader(IFormFile file)
+        {
+            var excelData = await UploadExcelFile(file);
+
+            if (excelData != null && excelData.Count > 6)
+            {
+                var parsedData = new Dictionary<string, List<string>>();
+                var headers = excelData[6];
+
+                for (int colIndex = 0; colIndex < headers.Count; colIndex++)
+                {
+                    var header = headers[colIndex];
+                    var columnData = new List<string>();
+
+                    for (int rowIndex = 7; rowIndex < excelData.Count; rowIndex++)
+                    {
+                        var rowData = excelData[rowIndex];
+
+                        if (colIndex < rowData.Count)
+                        {
+                            var cellValue = rowData[colIndex]?.ToString() ?? "";
+                            columnData.Add(cellValue);
+                        }
+                    }
+
+                    AddToParsedData(parsedData, $"Column_{colIndex + 1}", columnData);
+                }
+
+                return parsedData;
+            }
+
+            return null;
+        }
+
+        private void AddToParsedData(Dictionary<string, List<string>> parsedData, string key, List<string> columnData)
+        {
+            if (!parsedData.ContainsKey(key))
+            {
+                parsedData[key] = new List<string>();
+            }
+
+            parsedData[key].AddRange(columnData.Select(cell => cell?.ToString() ?? ""));
+        }
+
+
+
     }
 }

@@ -35,7 +35,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
 	name: "default",
-	pattern: "{controller=Document}/{action=Index}/{id?}");
+	pattern: "{controller=Excel}/{action=ExcelFileReader}/{id?}");
 
 app.MapHub<ProcessHub>("/ProcessHub");
 

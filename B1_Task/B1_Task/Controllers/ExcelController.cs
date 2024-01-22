@@ -1,4 +1,5 @@
 ﻿using B1_Task.Function.Excel;
+using B1_Task.Models;
 using ExcelDataReader;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +23,17 @@ namespace B1_Task.Controllers
         [HttpPost]
         public async Task<IActionResult> ExcelFileReader(IFormFile file)
         {
-            ViewBag.ExcelData = await _excelFunction.ProcessExcelFile(file);
-            return View();
+            var flatData = await _excelFunction.ProcessExcelFile(file);
+            var testMethod = await _excelFunction.ProcessExcelFileForHeader(file);
+
+            if (flatData != null)
+            {
+                var viewModel = new ExcelModel { FlatData = flatData };
+
+                return View(viewModel);
+            }
+
+            return BadRequest("Failed to process Excel file");
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿<form method="post" enctype="multipart/form-data">
+﻿@model ExcelModel
+
+<form method="post" enctype="multipart/form-data">
     <div class="row">
         <label>Select File</label>
         <input type="file" name="file" />
@@ -11,30 +13,19 @@
 </form>
 
 
-<table class="table">
-    <thead>
-    <tr>
-        @if (ViewBag.ExcelData != null && ViewBag.ExcelData.Count > 0)
+
+
+@if (Model != null && Model.FlatData != null)
+{
+    <h2>Flat Data</h2>
+    <ul>
+        @foreach (var item in Model.FlatData)
         {
-            @foreach (var header in ViewBag.ExcelData[0])
-            {
-                <th>@header</th>   
-            }
+            <li>@item</li>
         }
-    </tr>
-    </thead>
-    <tbody>
-    @if (ViewBag.ExcelData != null && ViewBag.ExcelData.Count > 1)
-    {
-        @for (int i = 1; i < ViewBag.ExcelData.Count; i++)
-        {
-            <tr>
-                @foreach(var cell in ViewBag.ExcelData[i])
-                {
-                    <td>@cell</td>
-                }
-            </tr>   
-        }
-    }
-    </tbody>
-</table>
+    </ul>
+}
+else
+{
+    <p>No data available.</p>
+}
