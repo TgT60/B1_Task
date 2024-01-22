@@ -3,6 +3,7 @@ using B1_Task.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace B1_Task.Migrations
 {
     [DbContext(typeof(B1Context))]
-    partial class B1ContextModelSnapshot : ModelSnapshot
+    [Migration("20240122195153_changed_TBlSheet_Account_Type")]
+    partial class changed_TBlSheet_Account_Type
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,31 +121,6 @@ namespace B1_Task.Migrations
                     b.HasIndex("TblBankId");
 
                     b.ToTable("TblSheets");
-                });
-
-            modelBuilder.Entity("B1_Task.Entity.BankEntityes.TblSheetClass", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SheetId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TblSheetId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TblSheetId");
-
-                    b.ToTable("TblSheetClass");
                 });
 
             modelBuilder.Entity("B1_Task.Entity.BankEntityes.TblTurnover", b =>
@@ -276,17 +254,6 @@ namespace B1_Task.Migrations
                     b.Navigation("Bank");
                 });
 
-            modelBuilder.Entity("B1_Task.Entity.BankEntityes.TblSheetClass", b =>
-                {
-                    b.HasOne("B1_Task.Entity.BankEntityes.TblSheet", "TblSheet")
-                        .WithMany("TblSheetClases")
-                        .HasForeignKey("TblSheetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TblSheet");
-                });
-
             modelBuilder.Entity("B1_Task.Entity.BankEntityes.TblTurnover", b =>
                 {
                     b.HasOne("B1_Task.Entity.BankEntityes.TblSheet", "TblSheet")
@@ -319,8 +286,6 @@ namespace B1_Task.Migrations
                     b.Navigation("ClosedBalances");
 
                     b.Navigation("OpeningBalances");
-
-                    b.Navigation("TblSheetClases");
 
                     b.Navigation("Turnovers");
                 });

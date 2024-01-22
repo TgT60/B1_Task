@@ -23,5 +23,10 @@
     </div>
 </div>
 
+@using (Html.BeginForm("StoredDocument", "Document", FormMethod.Post))
+{
+    <input type="submit" value="Stored Documents" />
+}
+
 <script src="js/signalr.js"></script>
 <script src="js/uploadProcess.js"></script>

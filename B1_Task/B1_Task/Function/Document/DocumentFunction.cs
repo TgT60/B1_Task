@@ -76,7 +76,7 @@ namespace B1_Task.Function.Document
             return countDeletedLinesInFile;
         }
 
-        public void StoreDocument(string filePath)
+        public void StoredDocument(string filePath)
         {
             var lines = File.ReadAllLines(Path.Combine(filePath, "output.txt"));
 

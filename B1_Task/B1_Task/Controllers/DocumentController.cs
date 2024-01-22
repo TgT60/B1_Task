@@ -6,7 +6,7 @@ namespace B1_Task.Controllers
 	public class DocumentController : Controller
 	{
         IDocumentFunction _documentFunction;
-
+        private const string _path = @"C:\Users\dimai\Desktop\Files\";
 		public DocumentController(IDocumentFunction documentFunction)
 		{
 			_documentFunction = documentFunction ;
@@ -17,22 +17,22 @@ namespace B1_Task.Controllers
 			return View();
 		}
 
-		[HttpPost]
+
+        [HttpPost]
 		public ActionResult ProcessDocuments()
 		{
-			var path = @"C:\Users\dimai\Desktop\Files\";
-			
-			var totalDeletedLines = _documentFunction.CreateCommonDoc(path, "ff");
+			var totalDeletedLines = _documentFunction.CreateCommonDoc(_path, "ff");
             ViewBag.TotalDeletedLines = totalDeletedLines;
 
             return View("Result");
         }
 
-        public ActionResult StoreDocument()
+        [HttpPost]
+        public ActionResult StoredDocument()
         {
-            var path = @"C:\Users\dimai\Desktop\Files\";
-            _documentFunction.StoredDocument(path);
-            return View("Result");
+            _documentFunction.StoredDocument(_path);
+
+            return Ok();
         }
     }
 }
