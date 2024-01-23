@@ -15,17 +15,35 @@
 
 
 
+<h2>Excel File Contents</h2>
+
 @if (Model != null && Model.FlatData != null)
 {
-    <h2>Flat Data</h2>
-    <ul>
-        @foreach (var item in Model.FlatData)
+    <table border="1">
+        <tr>
+            @foreach (var column in Model.FlatData.Keys)
+            {
+                <th>@column</th>
+            }
+        </tr>
+
+        @for (var rowIndex = 0; rowIndex < Model.FlatData.Values.Max(x => x.Count); rowIndex++)
         {
-            <li>@item</li>
+            <tr>
+                @foreach (var column in Model.FlatData.Keys)
+                {
+                    var cellValue = "";
+                    if (rowIndex < Model.FlatData[column].Count)
+                    {
+                        cellValue = Model.FlatData[column][rowIndex];
+                    }
+                    <td>@cellValue</td>
+                }
+            </tr>
         }
-    </ul>
+    </table>
 }
 else
 {
-    <p>No data available.</p>
+    <p>No data available or failed to process Excel file.</p>
 }

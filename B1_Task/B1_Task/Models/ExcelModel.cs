@@ -2,7 +2,6 @@
 {
     public class ExcelModel
     {
-        public List<string> FlatData { get; set; }
-
+        public Dictionary<string, List<string>> FlatData { get; set; }
     }
 }

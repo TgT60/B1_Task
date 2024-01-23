@@ -3,6 +3,7 @@ using B1_Task.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace B1_Task.Migrations
 {
     [DbContext(typeof(B1Context))]
-    partial class B1ContextModelSnapshot : ModelSnapshot
+    [Migration("20240123195328_add_filds_on_sheetClass")]
+    partial class add_filds_on_sheetClass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,24 +134,6 @@ namespace B1_Task.Migrations
                     b.Property<int>("TblBankId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalSumCloseActiveBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalSumClosePassiveBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalSumOpenActiveBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalSumOpenPassiveBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalSumTurnoversCredit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalSumTurnoversDebit")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TblBankId");
@@ -164,6 +149,9 @@ namespace B1_Task.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("SUMTurnoversCredit")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("SumCloseActiveBalance")
                         .HasColumnType("decimal(18,2)");
 
@@ -174,9 +162,6 @@ namespace B1_Task.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SumOpenPassiveBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("SumTurnoversCredit")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SumTurnoversDebit")

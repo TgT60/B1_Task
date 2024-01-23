@@ -24,11 +24,13 @@ namespace B1_Task.Controllers
         public async Task<IActionResult> ExcelFileReader(IFormFile file)
         {
             var flatData = await _excelFunction.ProcessExcelFile(file);
-            var testMethod = await _excelFunction.ProcessExcelFileForHeader(file);
+            var testColumnMethod = await _excelFunction.ProcessExcelFileForDictionary(file);
+            var testRowMethod = _excelFunction.GetAllValues(testColumnMethod);
+
 
             if (flatData != null)
             {
-                var viewModel = new ExcelModel { FlatData = flatData };
+                var viewModel = new ExcelModel { FlatData = testColumnMethod };
 
                 return View(viewModel);
             }
