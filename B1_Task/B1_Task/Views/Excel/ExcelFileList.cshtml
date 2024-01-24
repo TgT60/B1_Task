@@ -1,0 +1,17 @@
+﻿@model string[]
+
+<h2>Список загруженных файлов</h2>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var file in Model)
+        {
+            <li>@System.IO.Path.GetFileName(file)</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Нет загруженных файлов.</p>
+}

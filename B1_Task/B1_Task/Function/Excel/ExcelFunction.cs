@@ -3,6 +3,11 @@ using ExcelDataReader;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 using Microsoft.VisualBasic;
+using System.Globalization;
+using B1_Task.Entity.BankEntities;
+using B1_Task.Entity.BankEntityes;
+using B1_Task.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace B1_Task.Function.Excel
 {
@@ -14,6 +19,27 @@ namespace B1_Task.Function.Excel
         {
             _b1Context = b1Context;
         }
+
+        public async Task<List<TblBank>> GetBanks()
+        {
+            var banks = await _b1Context.TblBanks.ToListAsync();
+
+            return banks;
+        }
+        public async Task<List<TblSheet>> GetSheets()
+        {
+            var sheets = await _b1Context.TblSheets.ToListAsync();
+
+            return sheets;
+        }
+
+        public async Task<List<TblSheetClass>> GetSheetClasses()
+        {
+            var sheetClasses = await _b1Context.TblSheetClasses.ToListAsync();
+
+            return sheetClasses;
+        }
+
         public async Task<List<List<object>>> UploadExcelFile(IFormFile file)
         {
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
@@ -155,36 +181,219 @@ namespace B1_Task.Function.Excel
                     rows.Add(rowString);
                 }
             }
-            if (rows.Count > 0)
-            {
-                rows.RemoveAt(rows.Count - 1);
-            }
 
-            var sheetClassList = GetAllSheetClassesIndex(rows);
-            var sheetClassSum = GetSheetClassSum(rows);
-            var singleSheetClassData = GetSingleSheetClassData(rows);
-            var bankName = GetBankName(rows[0]);
-            var sheetName = rows[1];
-            var sheetStarDate = GetStarSheetDate(rows[2]);
-            var sheetEndDate = GetEndSheetDate(rows[2]);
-
+            rows.RemoveAt(rows.Count - 1);
             return rows;
         }
 
-        public List<string> RemoveHeaderFromoRows(List<string> rows)
+        public async Task<List<string>> UploadToExcelEntities(Dictionary<string, List<string>> parsedData)
+        {
+            var rows = GetAllValues(parsedData);
+            var bankName = GetBankName(rows[0]);
+
+            var bankEntity = new TblBank()
+            {
+                Name = bankName,
+            };
+            await _b1Context.TblBanks.AddAsync(bankEntity);
+            await _b1Context.SaveChangesAsync();
+
+            var sheetName = rows[1];
+            var sheetStarDate = GetStarSheetDate(rows[2]);
+            var sheetEndDate = GetEndSheetDate(rows[2]);
+            var sheetTotalSum = GetSheetTotalSum(rows);
+            var sheetTotalSumValue = ParseSheetTotalBalanceRow(sheetTotalSum);
+
+            var sheetEntity = new TblSheet()
+            {
+                Name = sheetName,
+                StartDate = sheetStarDate,
+                EndDate = sheetEndDate,
+                TotalSumOpenActiveBalance = sheetTotalSumValue.TotalOpenActiveBalance,
+                TotalSumOpenPassiveBalance = sheetTotalSumValue.TotalOpenPassiveBalance,
+                TotalSumTurnoversCredit = sheetTotalSumValue.TotalTurnoversCredit,
+                TotalSumTurnoversDebit = sheetTotalSumValue.TotalTurnoversDebit,
+                TotalSumCloseActiveBalance = sheetTotalSumValue.TotalCloseActiveBalance,
+                TotalSumClosePassiveBalance = sheetTotalSumValue.TotalClosePassiveBalance,
+                TblBankId = bankEntity.Id,
+            };
+
+            await _b1Context.TblSheets.AddAsync(sheetEntity);
+            await _b1Context.SaveChangesAsync();
+
+            var sheetClassNameIndexList = GetAllSheetClassNameIndex(rows);
+            var sheetClassSumIndexList = GetAllSheetClassSum(rows);
+
+            var rowsForParse = GetAllValues(parsedData);
+
+            for (int i = 0; i < sheetClassNameIndexList.Count; i++)
+            {
+                var classNameIndex = sheetClassNameIndexList[i];
+                var classSumIndex = sheetClassSumIndexList[i];
+
+                var sheetClassName = GetSheetClassName(rowsForParse, classNameIndex);
+                var sheetClassSum = GetSheetClassSum(rowsForParse, classSumIndex);
+                var parsedSheetClassSumRow = ParseSheetTotalBalanceRow(sheetClassSum);
+
+                var sheetClassEntity = new TblSheetClass()
+                {
+                    Name = sheetClassName,
+                    SumCloseActiveBalance = parsedSheetClassSumRow.TotalCloseActiveBalance,
+                    SumClosePassiveBalance = parsedSheetClassSumRow.TotalClosePassiveBalance,
+                    SumOpenActiveBalance = parsedSheetClassSumRow.TotalOpenActiveBalance,
+                    SumOpenPassiveBalance = parsedSheetClassSumRow.TotalOpenPassiveBalance,
+                    SumTurnoversCredit = parsedSheetClassSumRow.TotalTurnoversCredit,
+                    SumTurnoversDebit = parsedSheetClassSumRow.TotalTurnoversDebit,
+                    TblSheetId = sheetEntity.Id
+                };
+
+                await _b1Context.TblSheetClasses.AddAsync(sheetClassEntity);
+                await _b1Context.SaveChangesAsync();
+
+                var singleSheetClassData = GetSingleSheetClassData(rows, classNameIndex);
+                var parsedSheetClassDataList = ParseSheetClassRows(singleSheetClassData);
+
+                foreach (var parsedSheetClassData in parsedSheetClassDataList)
+                {
+                    var accountEntity = new TblAccount()
+                    { 
+                        Account = parsedSheetClassData.Account,
+                        TblSheetClassId = sheetClassEntity.Id,
+                    };
+
+                    await _b1Context.TblAccounts.AddAsync(accountEntity);
+                    await _b1Context.SaveChangesAsync();
+
+                    var openingBalanceEntity = new TblOpeningBalance()
+                    {
+                        ActiveBalance = parsedSheetClassData.OpenActiveBalance, 
+                        PassiveBalance = parsedSheetClassData.OpenPassiveBalance,
+                        TblSheetClassId = sheetClassEntity.Id
+                    };
+
+                    await _b1Context.TblOpeningBalances.AddAsync(openingBalanceEntity);
+                    await _b1Context.SaveChangesAsync();
+
+                    var turnoverEntity = new TblTurnover()
+                    {
+                        Debit = parsedSheetClassData.TurnoversDebit,
+                        Credit = parsedSheetClassData.TurnoversDebit,
+                        TblSheetClassId = sheetClassEntity.Id
+                    };
+
+                    await _b1Context.TblTurnovers.AddAsync(turnoverEntity);
+                    await _b1Context.SaveChangesAsync();
+
+                    var closedBalanceEntity = new TblClosedBalance()
+                    {
+                        ActiveBalance = parsedSheetClassData.CloseActiveBalance,
+                        PassiveBalance = parsedSheetClassData.ClosePassiveBalance,
+                        TblSheetClassId = sheetClassEntity.Id
+                    };
+
+                    await _b1Context.TblClosedBalances.AddAsync(closedBalanceEntity);
+                    await _b1Context.SaveChangesAsync();
+                    }
+                }
+            return rows;
+        }
+
+
+
+        public string GetSheetClassName(List<string> rows,int sheetClassNameIndex)
+        {
+            return rows[sheetClassNameIndex];
+        }
+        public string GetSheetClassSum(List<string> rows, int sheetClassSumIndex)
+        {
+            return rows[sheetClassSumIndex];
+        }
+
+        public List<SheetClassRow> ParseSheetClassRows(List<string> sheetClassRows)
+        {
+            var result = new List<SheetClassRow>();
+
+            foreach (string sheetClassRow in sheetClassRows)
+            {
+                var parts = sheetClassRow.Split(' ');
+
+                var totalBalanceValues = new List<decimal>();
+
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    string valueString = parts[i];
+                    valueString = valueString.Replace(',', '.');
+
+                    if (decimal.TryParse(valueString, NumberStyles.AllowLeadingSign | NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out decimal value))
+                    {
+                        totalBalanceValues.Add(value);
+                    }
+                }
+
+                var sheetRow = new SheetClassRow()
+                {
+                    Account = totalBalanceValues[0].ToString(),
+                    OpenActiveBalance = totalBalanceValues[1],
+                    OpenPassiveBalance = totalBalanceValues[2],
+                    TurnoversDebit = totalBalanceValues[3],
+                    TurnoversCredit = totalBalanceValues[4],
+                    CloseActiveBalance = totalBalanceValues[5],
+                    ClosePassiveBalance = totalBalanceValues[6],
+                };
+
+                result.Add(sheetRow);
+            }
+
+            return result;
+        }
+
+        public TotalSheetRow ParseSheetTotalBalanceRow(string balanceRow)
+        {
+            var parts = balanceRow.Split(' ');
+
+            var totalBalanceValues = new List<decimal>();
+
+            for (int i = 1; i < parts.Length; i++)
+            {
+                string valueString = parts[i];
+                valueString = valueString.Replace(',', '.');
+
+                if (decimal.TryParse(valueString, NumberStyles.AllowLeadingSign | NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out decimal value))
+                {
+                    totalBalanceValues.Add(value);
+                }
+            }
+
+            var sheetRow = new TotalSheetRow()
+            {
+                TotalOpenActiveBalance = totalBalanceValues[0],
+                TotalOpenPassiveBalance = totalBalanceValues[1],
+                TotalTurnoversDebit = totalBalanceValues[2],
+                TotalTurnoversCredit = totalBalanceValues[3],
+                TotalCloseActiveBalance = totalBalanceValues[4],
+                TotalClosePassiveBalance = totalBalanceValues[5],
+            };
+
+            return sheetRow;
+        }
+
+        public string GetSheetTotalSum(List<string> rows)
+        {
+            return rows.Last();
+        }
+
+        public List<string> RemoveHeaderFromRows(List<string> rows)
         {
             rows.RemoveRange(0,8);
             return rows;
         }
 
-        public List<string> GetSingleSheetClassData(List<string> rows)
+        public List<string> GetSingleSheetClassData(List<string> rows, int startIndex)
         {
             List<string> sheetSingleClassData = new List<string>();
-            int classCount = 0;
+            int classCount = 1;
 
-            RemoveHeaderFromoRows(rows);
-
-            foreach (var row in rows)
+            foreach (var (index, row) in rows.Skip(startIndex+1).Select((value, index) => (index + startIndex, value)))
             {
                 if (row.Contains("КЛАСС") && !row.Contains("ПО"))
                 {
@@ -201,10 +410,20 @@ namespace B1_Task.Function.Excel
                 }
             }
 
+            if (sheetSingleClassData.Count > 8)
+            {
+                sheetSingleClassData.RemoveAt(sheetSingleClassData.Count - 1);
+
+                if (sheetSingleClassData.Count > 0)
+                {
+                    sheetSingleClassData.RemoveAt(sheetSingleClassData.Count - 1);
+                }
+            }
+
             return sheetSingleClassData;
         }
 
-        public List<int> GetAllSheetClassesIndex(List<string> rows)
+        public List<int> GetAllSheetClassNameIndex(List<string> rows)
         {
             var classPositions = new List<int>();
 
@@ -220,7 +439,7 @@ namespace B1_Task.Function.Excel
             return classPositions;
         }
 
-        public List<int> GetSheetClassSum(List<string> rows)
+        public List<int> GetAllSheetClassSum(List<string> rows)
         {
             var classPositions = new List<int>();
 

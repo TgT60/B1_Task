@@ -1,0 +1,25 @@
+﻿@model ExcelViewModel
+
+<h2>Banks</h2>
+<ul>
+    @foreach (var bank in Model.Banks)
+    {
+        <li>@bank.Name</li>
+    }
+</ul>
+
+<h2>Sheets</h2>
+<ul>
+    @foreach (var sheet in Model.Sheets)
+    {
+        <li>@sheet.Name</li>
+    }
+</ul>
+
+<h2>Sheet Classes</h2>
+<ul>
+    @foreach (var sheetClass in Model.SheetClasses)
+    {
+        <li>@sheetClass.Name</li>
+    }
+</ul>

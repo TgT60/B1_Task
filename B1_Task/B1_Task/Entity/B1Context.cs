@@ -14,11 +14,10 @@ namespace B1_Task.Entity
         public virtual DbSet<TblProcedureResult> TblProcedureResults { get; set; }
         public virtual DbSet<TblBank> TblBanks { get; set; }
         public virtual DbSet<TblSheet> TblSheets { get; set; }
+        public virtual DbSet<TblSheetClass> TblSheetClasses { get; set; }
         public virtual DbSet<TblOpeningBalance> TblOpeningBalances { get; set; }
+        public virtual DbSet<TblAccount> TblAccounts { get; set; }
+        public virtual DbSet<TblClosedBalance> TblClosedBalances { get; set; }
         public virtual DbSet<TblTurnover> TblTurnovers { get; set; }
-
-
-
-
     }
 }

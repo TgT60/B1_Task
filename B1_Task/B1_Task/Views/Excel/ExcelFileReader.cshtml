@@ -1,4 +1,4 @@
-﻿@model ExcelModel
+﻿@model ExcelViewModel
 
 <form method="post" enctype="multipart/form-data">
     <div class="row">
@@ -7,7 +7,7 @@
     </div>
     <div class="row" style="padding-top: 10px;">
         <div class="col-3">
-            <input type="submit" asp-controller="Excel" asp-action="ExcelFileReader" class="btn btn-dark" value="Read Excel File" />
+            <input type="submit" asp-controller="Excel" asp-action="ExcelFileReader" class="btn btn-dark" value="Upload data from File" />
         </div>
     </div>
 </form>
@@ -15,35 +15,4 @@
 
 
 
-<h2>Excel File Contents</h2>
 
-@if (Model != null && Model.FlatData != null)
-{
-    <table border="1">
-        <tr>
-            @foreach (var column in Model.FlatData.Keys)
-            {
-                <th>@column</th>
-            }
-        </tr>
-
-        @for (var rowIndex = 0; rowIndex < Model.FlatData.Values.Max(x => x.Count); rowIndex++)
-        {
-            <tr>
-                @foreach (var column in Model.FlatData.Keys)
-                {
-                    var cellValue = "";
-                    if (rowIndex < Model.FlatData[column].Count)
-                    {
-                        cellValue = Model.FlatData[column][rowIndex];
-                    }
-                    <td>@cellValue</td>
-                }
-            </tr>
-        }
-    </table>
-}
-else
-{
-    <p>No data available or failed to process Excel file.</p>
-}

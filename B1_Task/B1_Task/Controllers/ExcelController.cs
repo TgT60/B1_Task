@@ -12,7 +12,7 @@ namespace B1_Task.Controllers
 
         public ExcelController(IExcelFunction excelFunction)
         {
-            _excelFunction =excelFunction;
+            _excelFunction = excelFunction;
         }
         public IActionResult ExcelFileReader()
         {
@@ -23,19 +23,36 @@ namespace B1_Task.Controllers
         [HttpPost]
         public async Task<IActionResult> ExcelFileReader(IFormFile file)
         {
-            var flatData = await _excelFunction.ProcessExcelFile(file);
             var testColumnMethod = await _excelFunction.ProcessExcelFileForDictionary(file);
-            var testRowMethod = _excelFunction.GetAllValues(testColumnMethod);
+            await _excelFunction.UploadToExcelEntities(testColumnMethod);
+
+            return View("Result");
+        }
+
+        public async Task<IActionResult> ExcelData()
+        {
+            var banks = await _excelFunction.GetBanks();
+            var sheets = await _excelFunction.GetSheets();
+            var sheetClasses = await _excelFunction.GetSheetClasses();
 
 
-            if (flatData != null)
+            var viewModel = new ExcelViewModel()
             {
-                var viewModel = new ExcelModel { FlatData = testColumnMethod };
+                Banks = banks,
+                Sheets = sheets,
+                SheetClasses = sheetClasses
+            };
 
-                return View(viewModel);
-            }
+            return View(viewModel);
+        }
 
-            return BadRequest("Failed to process Excel file");
+        public IActionResult ExcelFileList()
+        {
+            string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads");
+
+            string[] files = Directory.GetFiles(uploadPath);
+
+            return View(files);
         }
     }
 }

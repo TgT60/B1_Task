@@ -3,6 +3,7 @@ using B1_Task.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace B1_Task.Migrations
 {
     [DbContext(typeof(B1Context))]
-    partial class B1ContextModelSnapshot : ModelSnapshot
+    [Migration("20240124121008_add_name_field_to_SheetClass")]
+    partial class add_name_field_to_SheetClass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,7 +67,7 @@ namespace B1_Task.Migrations
 
                     b.HasIndex("TblSheetClassId");
 
-                    b.ToTable("TblAccounts");
+                    b.ToTable("TblAccount");
                 });
 
             modelBuilder.Entity("B1_Task.Entity.BankEntityes.TblBank", b =>
@@ -105,7 +108,7 @@ namespace B1_Task.Migrations
 
                     b.HasIndex("TblSheetClassId");
 
-                    b.ToTable("TblClosedBalances");
+                    b.ToTable("TblClosedBalance");
                 });
 
             modelBuilder.Entity("B1_Task.Entity.BankEntityes.TblSheet", b =>
@@ -193,7 +196,7 @@ namespace B1_Task.Migrations
 
                     b.HasIndex("TblSheetId");
 
-                    b.ToTable("TblSheetClasses");
+                    b.ToTable("TblSheetClass");
                 });
 
             modelBuilder.Entity("B1_Task.Entity.BankEntityes.TblTurnover", b =>

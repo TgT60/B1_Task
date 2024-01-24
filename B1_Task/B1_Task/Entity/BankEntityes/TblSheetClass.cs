@@ -5,6 +5,7 @@ namespace B1_Task.Entity.BankEntityes
     public class TblSheetClass
     {
         public int Id { get; set; }
+        public string Name { get; set; }
         public decimal SumOpenActiveBalance { get; set; }
         public decimal SumOpenPassiveBalance { get; set; }
         public decimal SumTurnoversDebit { get; set; }
