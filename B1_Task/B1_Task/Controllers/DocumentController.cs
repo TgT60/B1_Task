@@ -19,7 +19,7 @@ namespace B1_Task.Controllers
 		}
 
         [HttpPost]
-		public ActionResult ProcessDocuments([FromBody] string path, [FromBody] string stringToDelete)
+		public ActionResult ProcessDocuments([FromForm] string path, [FromForm] string stringToDelete)
 		{
 			var totalDeletedLines = _documentFunction.CreateCommonDoc(_path, "ff");
             ViewBag.TotalDeletedLines = totalDeletedLines;
@@ -28,9 +28,9 @@ namespace B1_Task.Controllers
         }
 
         [HttpPost]
-        public ActionResult StoredDocument()
+        public async Task<ActionResult> StoreDocument()
         {
-            _documentFunction.StoredDocument(_path);
+            await _documentFunction.StoreDocument(_path);
 
             return Ok();
         }

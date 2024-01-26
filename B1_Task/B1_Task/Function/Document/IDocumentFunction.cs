@@ -3,7 +3,7 @@
 	public interface IDocumentFunction
 	{
 		int CreateCommonDoc(string path, string stringToRemove);
-        void StoredDocument(string filePath);
+        Task StoreDocument(string filePath);
 
     }
 }
