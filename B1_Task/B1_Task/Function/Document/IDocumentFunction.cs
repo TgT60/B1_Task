@@ -2,8 +2,8 @@
 {
 	public interface IDocumentFunction
 	{
-		int CreateCommonDoc(string path, string stringToRemove);
-        Task StoreDocument(string filePath);
+		int CreateCommonDoc(string path);
+        Task StoreDocument(IFormFile file);
 
     }
 }

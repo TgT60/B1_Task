@@ -20,8 +20,9 @@ namespace B1_Task.Function.Document
             _processHub = processHub;
         }
 
-        public int CreateCommonDoc(string path, string stringToRemove)
+        public int CreateCommonDoc(string path)
         {
+            
             using (var output = File.Open(Path.Combine(path, "output.txt"), FileMode.Create))
             {
                 var totalDeletedLines = 0;
@@ -29,7 +30,7 @@ namespace B1_Task.Function.Document
                 foreach (var fileName in CreateListDocuments())
                 {
                     string filePath = Path.Combine(path, fileName);
-                    totalDeletedLines += RemoveString(filePath, output, stringToRemove);
+                    totalDeletedLines += RemoveString(filePath, output, "ff");
                 }
 
                 return totalDeletedLines;
@@ -76,51 +77,53 @@ namespace B1_Task.Function.Document
             return countDeletedLinesInFile;
         }
 
-        public async Task StoreDocument(string filePath)
+        public async Task StoreDocument(IFormFile file)
         {
-            var path = Path.Combine(filePath, "test_1.txt");
-            var lines = await File.ReadAllLinesAsync(path);
-
-            var docEntity = new TblDocument()
+            using (var streamReader = new StreamReader(file.OpenReadStream()))
             {
-                Name = "output.txt"
-            };
+                var fileContent = await streamReader.ReadToEndAsync();
+                var lines = fileContent.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-            var importedCount = 0;
-            var remainingCount = lines.Length;
-
-            await _b1Context.TblDocuments.AddAsync(docEntity);
-            await _b1Context.SaveChangesAsync();
-
-            var contentDocEntities = new List<TblContent>();
-
-            foreach (var line in lines)
-            {
-                var parsedLine = ParseLine(line);
-
-                if (parsedLine != null)
+                var docEntity = new TblDocument()
                 {
-                    var tblContent = new TblContent()
-                    {
-                        Date = parsedLine.Date,
-                        StringEU = parsedLine.StringEU,
-                        StringRU = parsedLine.StringRU,
-                        PositiveNumber = parsedLine.PositiveNumber,
-                        FolatNumber = parsedLine.FolatNumber,
-                        TblDocumentId = docEntity.Id,
-                    };
-                    
-                    contentDocEntities.Add(tblContent);
-                }
-                remainingCount--;
-                importedCount++;
-                   
-                await _processHub.Clients.All.SendAsync("UploadProcess", importedCount, remainingCount);
-            }
+                    Name = "output.txt"
+                };
 
-            await _b1Context.TblContents.AddRangeAsync(contentDocEntities);
-            await _b1Context.SaveChangesAsync();
+                await _b1Context.TblDocuments.AddAsync(docEntity);
+                await _b1Context.SaveChangesAsync();
+
+                var contentDocEntities = new List<TblContent>();
+
+                var importedCount = 0;
+                var remainingCount = lines.Length;
+
+                foreach (var line in lines)
+                {
+                    var parsedLine = ParseLine(line);
+
+                    if (parsedLine != null)
+                    {
+                        var tblContent = new TblContent()
+                        {
+                            Date = parsedLine.Date,
+                            StringEU = parsedLine.StringEU,
+                            StringRU = parsedLine.StringRU,
+                            PositiveNumber = parsedLine.PositiveNumber,
+                            FolatNumber = parsedLine.FolatNumber,
+                            TblDocumentId = docEntity.Id,
+                        };
+
+                        await _b1Context.TblContents.AddAsync(tblContent);
+                        await _b1Context.SaveChangesAsync();
+                    }
+                    remainingCount--;
+                    importedCount++;
+
+                    await _processHub.Clients.All.SendAsync("UploadProcess", importedCount, remainingCount);
+                }
+            }
         }
+
 
         private Content ParseLine(string line)
         {

@@ -19,20 +19,19 @@ namespace B1_Task.Controllers
 		}
 
         [HttpPost]
-		public ActionResult ProcessDocuments([FromForm] string path, [FromForm] string stringToDelete)
-		{
-			var totalDeletedLines = _documentFunction.CreateCommonDoc(_path, "ff");
+		public ActionResult ProcessDocuments()
+        {
+            var totalDeletedLines = _documentFunction.CreateCommonDoc(_path);
             ViewBag.TotalDeletedLines = totalDeletedLines;
 
             return View("Result");
         }
 
         [HttpPost]
-        public async Task<ActionResult> StoreDocument()
+        public async Task<IActionResult> StoreDocument([FromForm] IFormFile file)
         {
-            await _documentFunction.StoreDocument(_path);
-
-            return Ok();
+            await _documentFunction.StoreDocument(file);
+            return View("Index");
         }
     }
 }

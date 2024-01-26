@@ -23,9 +23,11 @@
     </div>
 </div>
 
-@using (Html.BeginForm("StoreDocument", "Document", FormMethod.Post))
+@using (Html.BeginForm("StoreDocument", "Document", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-    <input type="submit" value="Stored Documents" />
+    <label for="documentPath">Choose document</label>
+    <input type="file" name="file" id="documentPath" />
+    <input type="submit" value="Store" />
 }
 
 <script src="js/signalr.js"></script>
