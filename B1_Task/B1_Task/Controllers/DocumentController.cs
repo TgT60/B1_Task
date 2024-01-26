@@ -5,8 +5,9 @@ namespace B1_Task.Controllers
 {
 	public class DocumentController : Controller
 	{
-        IDocumentFunction _documentFunction;
+        readonly IDocumentFunction _documentFunction;
         private const string _path = @"C:\Users\dimai\Desktop\Files\";
+
 		public DocumentController(IDocumentFunction documentFunction)
 		{
 			_documentFunction = documentFunction ;
@@ -17,9 +18,8 @@ namespace B1_Task.Controllers
 			return View();
 		}
 
-
         [HttpPost]
-		public ActionResult ProcessDocuments()
+		public ActionResult ProcessDocuments([FromBody] string path, [FromBody] string stringToDelete)
 		{
 			var totalDeletedLines = _documentFunction.CreateCommonDoc(_path, "ff");
             ViewBag.TotalDeletedLines = totalDeletedLines;

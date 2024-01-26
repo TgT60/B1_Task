@@ -76,7 +76,7 @@ namespace B1_Task.Function.Document
             return countDeletedLinesInFile;
         }
 
-        public void StoredDocument(string filePath)
+        public async void StoreDocument(string filePath)
         {
             var lines = File.ReadAllLines(Path.Combine(filePath, "output.txt"));
 
@@ -88,8 +88,8 @@ namespace B1_Task.Function.Document
             var importedCount = 0;
             var remainingCount = lines.Length;
 
-            _b1Context.TblDocuments.Add(docEntity);
-            _b1Context.SaveChanges();
+            await _b1Context.TblDocuments.AddAsync(docEntity);
+            await _b1Context.SaveChangesAsync();
 
             foreach (var line in lines)
             {
@@ -106,13 +106,13 @@ namespace B1_Task.Function.Document
                         FolatNumber = parsedLine.FolatNumber,
                         TblDocumentId = docEntity.Id,
                     };
-                    _b1Context.TblContents.Add(tblContent);
-                    _b1Context.SaveChanges();
+                    await _b1Context.TblContents.AddAsync(tblContent);
+                    await _b1Context.SaveChangesAsync();
                 }
                 remainingCount--;
                 importedCount++;
 
-                _processHub.Clients.All.SendAsync("UploadProcess", importedCount, remainingCount);
+                await _processHub.Clients.All.SendAsync("UploadProcess", importedCount, remainingCount);
             }
 
         }
